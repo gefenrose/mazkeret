@@ -85,17 +85,62 @@
 
       /* ── Layout ── */
       .app-shell {
-        width: min(1180px, calc(100vw - 32px));
+        width: min(720px, calc(100vw - 32px));
         margin: 0 auto;
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.75fr);
-        gap: 24px;
-        align-items: start;
-        padding: 48px 0 32px;
+        padding: 36px 0 48px;
         animation: fadeIn 0.4s ease both;
       }
 
-      .journal-panel, .memory-panel { min-width: 0; }
+      /* ── App topbar ── */
+      .app-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .app-topbar .eyebrow { margin-bottom: 0; }
+
+      /* ── Tab navigation ── */
+      .tab-nav {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        margin-bottom: 20px;
+        border-radius: 999px;
+        background: rgba(255, 250, 241, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        box-shadow: 0 8px 24px rgba(40, 31, 20, 0.08);
+        backdrop-filter: blur(20px);
+      }
+      .tab-nav button {
+        flex: 1;
+        min-height: 44px;
+        border: none;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+      }
+      .tab-nav button[aria-selected="true"] {
+        background: #55756b;
+        color: #fffaf6;
+      }
+      .tab-nav button:hover:not([aria-selected="true"]) {
+        background: rgba(85, 117, 107, 0.1);
+        color: var(--ink);
+      }
+
+      /* ── Tab panels ── */
+      .tab-panel { display: none; }
+      .tab-panel.is-active { display: block; }
+      .tab-panel--stacked.is-active { display: grid; gap: 16px; }
+
+      /* H1 inside the Today tab panel */
+      .journal-panel > h1 { margin-bottom: 0; }
 
       .journal-panel {
         background: rgba(255, 250, 241, 0.82);
@@ -107,7 +152,7 @@
         animation: slideUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
       }
 
-      .topbar, .month-header, .actions, .entry-head {
+      .month-header, .actions, .entry-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -390,9 +435,6 @@
       .primary-button:active { transform: scale(0.97); }
       .primary-button.saved { animation: savePulse 0.55s ease-out; }
 
-      /* ── Memory panel ── */
-      .memory-panel { display: grid; gap: 16px; }
-
       .month-card, .calendar-card, .entry {
         background: rgba(255, 250, 241, 0.72);
         border: 1px solid rgba(255, 255, 255, 0.7);
@@ -637,26 +679,92 @@
         background: rgba(255, 250, 241, 0.55);
       }
 
-      /* ── Cloud backup UI ── */
-      .cloud-bar {
+      /* ── Sync tab cards ── */
+      .sync-card {
+        background: rgba(255, 250, 241, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        box-shadow: 0 18px 48px rgba(40, 31, 20, 0.1);
+        backdrop-filter: blur(18px);
+        padding: 20px 24px;
+        animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+      }
+      .sync-help {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-top: 6px;
+        margin-bottom: 20px;
+      }
+      .sync-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .sync-code-row {
         display: flex;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 10px 14px;
+        gap: 10px;
+        padding: 11px 14px;
+        background: rgba(255, 255, 255, 0.56);
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.36);
-        font-size: 0.82rem;
-        color: var(--muted);
-        margin-bottom: 16px;
-        animation: slideUp 0.5s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+        margin-bottom: 18px;
       }
+      .sync-or {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 16px;
+        color: var(--muted);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+      .sync-or::before, .sync-or::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      .sync-link-row {
+        display: flex;
+        gap: 10px;
+      }
+      .sync-code-input {
+        flex: 1;
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.54);
+        color: var(--ink);
+        font-family: monospace;
+        font-size: 0.88rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .sync-code-input:focus {
+        border-color: rgba(85, 117, 107, 0.65);
+        box-shadow: 0 0 0 4px rgba(85, 117, 107, 0.12);
+      }
+      .sync-data-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      /* ── Cloud status ── */
       .cloud-status {
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 8px;
+        font-size: 0.88rem;
         font-weight: 700;
+        color: var(--muted);
       }
       .cloud-dot {
         width: 8px;
@@ -670,21 +778,28 @@
       .cloud-dot.syncing { background: #c47f5b; animation: cloudSpin 0.9s linear infinite; border-radius: 0; width: 10px; height: 10px; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
       .cloud-dot.error   { background: #9a5f55; }
       .cloud-id {
-        font-size: 0.74rem;
-        opacity: 0.7;
+        flex: 1;
         font-family: monospace;
-        letter-spacing: 0.04em;
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+        color: var(--ink);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .cloud-btn {
+        flex: 0 0 auto;
         border: 1px solid var(--line);
         border-radius: 999px;
-        padding: 5px 12px;
+        padding: 7px 14px;
         color: var(--muted);
         background: rgba(255,255,255,0.5);
-        font-size: 0.76rem;
+        font-size: 0.8rem;
         font-weight: 800;
         cursor: pointer;
         transition: transform 0.15s;
+        white-space: nowrap;
       }
       .cloud-btn:hover { transform: translateY(-1px); }
       .cloud-btn-danger { color: #9a5f55; border-color: rgba(154,95,85,0.3); }
@@ -692,15 +807,17 @@
 
       /* ── Responsive ── */
       @media (max-width: 860px) {
-        .app-shell { grid-template-columns: 1fr; align-items: start; width: min(100% - 32px, 1180px); }
+        .app-shell { width: min(100% - 32px, 720px); }
         .timeline { max-height: none; }
         .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       }
       @media (max-width: 560px) {
-        .app-shell { width: min(100% - 20px, 1180px); padding: 24px 0 24px; gap: 12px; }
+        .app-shell { width: min(100% - 20px, 720px); padding: 24px 0 24px; }
         .journal-panel { padding: 18px; }
-        .topbar { align-items: flex-start; flex-direction: column; }
+        .app-topbar { flex-wrap: wrap; }
         .date-pill { width: 100%; text-align: center; }
+
+        .tab-nav button { font-size: 0.76rem; min-height: 38px; }
 
         .stats-grid { grid-template-columns: 1fr; }
         .calendar-header { display: grid; }
@@ -847,17 +964,27 @@
   </head>
   <body>
     <main class="app-shell">
-      <section class="journal-panel" data-i18n-aria-label="journalAriaLabel">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow" data-i18n="eyebrowJournal">Keepsake</p>
-            <h1 data-i18n="heading">How was today?</h1>
-          </div>
-          <div class="topbar-actions">
-            <time id="todayLabel" class="date-pill"></time>
-            <button type="button" id="langToggle" class="lang-toggle"></button>
-          </div>
-        </header>
+
+      <!-- Global topbar: always visible -->
+      <header class="app-topbar">
+        <p class="eyebrow" data-i18n="eyebrowJournal">Keepsake</p>
+        <div class="topbar-actions">
+          <time id="todayLabel" class="date-pill"></time>
+          <button type="button" id="langToggle" class="lang-toggle"></button>
+        </div>
+      </header>
+
+      <!-- Tab navigation -->
+      <nav class="tab-nav" role="tablist" data-i18n-aria-label="tabNavAriaLabel">
+        <button type="button" role="tab" data-tab="today" aria-selected="true" data-i18n="tabToday">Today</button>
+        <button type="button" role="tab" data-tab="insights" aria-selected="false" data-i18n="tabInsights">Insights</button>
+        <button type="button" role="tab" data-tab="calendar" aria-selected="false" data-i18n="tabCalendar">Calendar</button>
+        <button type="button" role="tab" data-tab="sync" aria-selected="false" data-i18n="tabSync">Sync</button>
+      </nav>
+
+      <!-- Today tab: mood slider + entry form -->
+      <section id="tab-today" class="tab-panel is-active journal-panel" role="tabpanel" data-i18n-aria-label="journalAriaLabel">
+        <h1 data-i18n="heading">How was today?</h1>
 
         <div class="mood-card" id="moodCard">
           <div class="mood-readout">
@@ -875,7 +1002,6 @@
               <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
           </div>
-
         </div>
 
         <form class="entry-form" id="entryForm">
@@ -925,19 +1051,8 @@
         </form>
       </section>
 
-      <aside class="memory-panel" data-i18n-aria-label="memoriesAriaLabel">
-        <div class="cloud-bar" id="cloudBar">
-          <div class="cloud-status">
-            <span class="cloud-dot" id="cloudDot"></span>
-            <span id="cloudStatus" data-i18n="settingUpCloud">Setting up cloud…</span>
-          </div>
-          <span class="cloud-id" id="cloudId"></span>
-          <button class="cloud-btn" id="cloudCopyBtn" data-i18n="cloudCopyText" data-i18n-title="cloudCopyTitle" title="Copy your sync ID to use on another device">Copy ID</button>
-          <button class="cloud-btn" id="cloudLinkBtn" data-i18n="cloudLinkText" data-i18n-title="cloudLinkTitle" title="Link to an existing sync ID">Link ID</button>
-          <button class="cloud-btn" id="exportBtn" data-i18n="exportText">Export</button>
-          <button class="cloud-btn cloud-btn-danger" id="deleteAllBtn" data-i18n="deleteAll">Delete all</button>
-        </div>
-
+      <!-- Insights tab: mood stats -->
+      <div id="tab-insights" class="tab-panel" role="tabpanel" data-i18n-aria-label="memoriesAriaLabel">
         <div class="month-card">
           <div class="month-header">
             <div>
@@ -964,7 +1079,10 @@
           </div>
           <div class="sparkline" id="sparkline" data-i18n-aria-label="moodHistoryAriaLabel"></div>
         </div>
+      </div>
 
+      <!-- Calendar tab: monthly calendar + timeline -->
+      <div id="tab-calendar" class="tab-panel tab-panel--stacked" role="tabpanel">
         <div class="calendar-card">
           <div class="calendar-header">
             <div>
@@ -985,9 +1103,53 @@
             <div class="month-grid" id="monthGrid" data-i18n-aria-label="monthGridAriaLabel"></div>
           </div>
         </div>
-
         <div class="timeline" id="timeline"></div>
-      </aside>
+      </div>
+
+      <!-- Sync tab: cloud backup, export, delete -->
+      <div id="tab-sync" class="tab-panel tab-panel--stacked" role="tabpanel">
+
+        <!-- Status -->
+        <div class="sync-card">
+          <div class="cloud-status">
+            <span class="cloud-dot" id="cloudDot"></span>
+            <span id="cloudStatus" data-i18n="settingUpCloud">Setting up cloud…</span>
+          </div>
+        </div>
+
+        <!-- Multi-device access -->
+        <div class="sync-card" id="syncDeviceCard">
+          <p class="eyebrow" data-i18n="syncDevicesEyebrow">Use on another device</p>
+          <p class="sync-help" data-i18n="syncDevicesHelp">Open Keepsake on your other device, go to Sync, and enter the code below to access the same journal.</p>
+
+          <p class="sync-label" data-i18n="syncYourCode">Your code</p>
+          <div class="sync-code-row">
+            <span class="cloud-id" id="cloudId">—</span>
+            <button class="cloud-btn" id="cloudCopyBtn" data-i18n="cloudCopyText">Copy code</button>
+          </div>
+
+          <div class="sync-or"><span data-i18n="syncOr">or connect to a code from another device</span></div>
+
+          <div class="sync-link-row">
+            <input type="text" id="syncCodeInput" class="sync-code-input"
+                   data-i18n-placeholder="syncCodeInputPlaceholder"
+                   placeholder="Paste the code here"
+                   autocomplete="off" spellcheck="false" />
+            <button class="cloud-btn" id="cloudLinkBtn" data-i18n="cloudLinkText">Connect</button>
+          </div>
+        </div>
+
+        <!-- Data management -->
+        <div class="sync-card">
+          <p class="eyebrow" data-i18n="syncDataEyebrow">Your data</p>
+          <div class="sync-data-btns">
+            <button class="cloud-btn" id="exportBtn" data-i18n="exportText">Download a copy</button>
+            <button class="cloud-btn cloud-btn-danger" id="deleteAllBtn" data-i18n="deleteAll">Delete everything</button>
+          </div>
+        </div>
+
+      </div>
+
     </main>
 
     <template id="entryTemplate">
@@ -1080,18 +1242,18 @@
           saveChanges: "Save changes",
           saveEntry: "Save entry",
           memoriesAriaLabel: "Saved memories",
-          cloudCopyText: "Copy ID",
-          cloudCopyTitle: "Copy your sync ID to use on another device",
+          cloudCopyText: "Copy code",
+          cloudCopyTitle: "Copy your access code",
           cloudCopyCopied: "Copied!",
-          cloudLinkText: "Link ID",
-          cloudLinkTitle: "Link to an existing sync ID",
+          cloudLinkText: "Connect",
+          cloudLinkTitle: "Connect to another device's code",
           cloudLinkPrompt: "Paste your sync ID from another device:",
-          exportText: "Export",
+          exportText: "Download a copy",
           exportNoEntries: "No entries to export.",
           csvHeaders: ["Date", "Score", "Mood", "Memory", "Chips", "Has Photo"],
           yesLabel: "Yes",
           noLabel: "No",
-          deleteAll: "Delete all",
+          deleteAll: "Delete everything",
           deleteNothing: "Nothing to delete.",
           deleteConfirm: (n) => `Delete all ${n} entries? This cannot be undone.`,
           moodStatsEyebrow: "Mood stats",
@@ -1135,6 +1297,17 @@
           langToggleLabel: "עברית",
           langToggleAriaLabel: "Switch to Hebrew",
           settingUpCloud: "Setting up cloud…",
+          syncDevicesEyebrow: "Use on another device",
+          syncDevicesHelp: "Open Keepsake on your other device, go to Sync, and enter the code below to access the same journal.",
+          syncYourCode: "Your code",
+          syncOr: "or connect to a code from another device",
+          syncCodeInputPlaceholder: "Paste the code here",
+          syncDataEyebrow: "Your data",
+          tabNavAriaLabel: "Main sections",
+          tabToday: "Today",
+          tabInsights: "Insights",
+          tabCalendar: "Calendar",
+          tabSync: "Sync",
         },
         he: {
           htmlLang: "he",
@@ -1163,20 +1336,20 @@
           saveChanges: "שמירת שינויים",
           saveEntry: "שמירת רשומה",
           memoriesAriaLabel: "זכרונות שמורים",
-          cloudCopyText: "העתקת מזהה",
-          cloudCopyTitle: "העתקת מזהה הסנכרון לשימוש במכשיר אחר",
+          cloudCopyText: "העתקת הקוד",
+          cloudCopyTitle: "העתקת קוד הגישה שלך",
           cloudCopyCopied: "הועתק!",
-          cloudLinkText: "קישור מזהה",
-          cloudLinkTitle: "קישור למזהה סנכרון קיים",
+          cloudLinkText: "התחברות",
+          cloudLinkTitle: "התחברות לקוד ממכשיר אחר",
           cloudLinkPrompt: "הדבק/י כאן את מזהה הסנכרון מהמכשיר האחר:",
-          exportText: "ייצוא",
+          exportText: "הורדת עותק",
           exportNoEntries: "אין רשומות לייצוא.",
           csvHeaders: ["תאריך", "ניקוד", "מצב רוח", "זיכרון", "תגיות", "יש תמונה"],
           yesLabel: "כן",
           noLabel: "לא",
           deleteAll: "מחיקת הכל",
           deleteNothing: "אין מה למחוק.",
-          deleteConfirm: (n) => `למחוק את כל ${n} הרשומות? לא ניתן לשחזר פעולה זו.`,
+          deleteConfirm: (n) => `למחוק את כל ${n} הרשומות? לא ניתן לשחזר.`,
           moodStatsEyebrow: "סטטיסטיקת מצב רוח",
           archiveHeading: "ארכיון קטן",
           statsRangeAriaLabel: "טווח סטטיסטיקת מצב רוח",
@@ -1218,6 +1391,17 @@
           langToggleLabel: "English",
           langToggleAriaLabel: "החלפה לאנגלית",
           settingUpCloud: "מגדיר חיבור לעננה…",
+          syncDevicesEyebrow: "שימוש במכשיר אחר",
+          syncDevicesHelp: "פתח/י את מזכרת במכשיר האחר, לך/כי ללשונית הסנכרון, והזן/י את הקוד שלמטה.",
+          syncYourCode: "הקוד שלך",
+          syncOr: "או התחבר/י לקוד ממכשיר אחר",
+          syncCodeInputPlaceholder: "הדבק/י את הקוד כאן",
+          syncDataEyebrow: "הנתונים שלך",
+          tabNavAriaLabel: "ניווט ראשי",
+          tabToday: "היום",
+          tabInsights: "תובנות",
+          tabCalendar: "לוח שנה",
+          tabSync: "סנכרון",
         },
       };
 
@@ -1298,7 +1482,7 @@
         window._lastCloudMsgFn = msgFn;
         cloudDot.className = "cloud-dot " + state;
         cloudStatus.textContent = msgFn(window.CURRENT_LANG);
-        if (id !== undefined) cloudIdEl.textContent = id ? id.slice(0,8) + "…" : "";
+        if (id !== undefined) cloudIdEl.textContent = id || "—";
       }
       window._refreshCloudStatus = function () {
         if (window._lastCloudMsgFn) cloudStatus.textContent = window._lastCloudMsgFn(window.CURRENT_LANG);
@@ -1390,8 +1574,8 @@
       } catch (e) {
         // Firebase not configured — silently degrade to local-only
         setCloudState("", lang => window.STRINGS[lang].localOnly, "");
-        cloudCopyBtn.style.display = "none";
-        cloudLinkBtn.style.display = "none";
+        const deviceCard = document.getElementById("syncDeviceCard");
+        if (deviceCard) deviceCard.hidden = true;
         window._pushToCloud = null;
       }
 
@@ -1406,13 +1590,23 @@
       });
 
       cloudLinkBtn.addEventListener("click", () => {
-        const input = prompt(window.STRINGS[window.CURRENT_LANG].cloudLinkPrompt);
-        if (!input || input.length < 10) return;
-        const trimmed = input.trim();
+        const inputEl = document.getElementById("syncCodeInput");
+        const raw = inputEl ? inputEl.value : "";
+        if (!raw || raw.trim().length < 10) return;
+        const trimmed = raw.trim();
+        if (inputEl) inputEl.value = "";
         localStorage.setItem(LINK_KEY, trimmed);
         setCloudState("syncing", lang => window.STRINGS[lang].linkingMsg, trimmed);
         setupRealtimeSync(db, trimmed);
       });
+
+      // Allow pressing Enter in the code input to trigger Connect
+      const syncCodeInput = document.getElementById("syncCodeInput");
+      if (syncCodeInput) {
+        syncCodeInput.addEventListener("keydown", e => {
+          if (e.key === "Enter") cloudLinkBtn.click();
+        });
+      }
 
       document.getElementById("exportBtn").addEventListener("click", () => {
         const lang = window.CURRENT_LANG;
@@ -1667,7 +1861,7 @@
         chips.forEach(c => selectChip(c, true));
       }
 
-      function loadEntryForEditing(date, scrollToEditor = false) {
+      function loadEntryForEditing(date, switchToEditor = false) {
         if (date > localDateKey(new Date())) return;
         const entry = getEntries().find(e => e.date === date);
         editingDate = date;
@@ -1678,7 +1872,7 @@
         setImagePreview(entry?.imageUrl || null);
         renderEditState();
         renderEntries();
-        if (scrollToEditor) document.querySelector(".journal-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+        if (switchToEditor) switchTab("today");
       }
 
       function startTodayEntry() {
@@ -2049,7 +2243,26 @@
         applyLanguage(CURRENT_LANG === "en" ? "he" : "en");
       });
 
+      // ── Tab navigation ──
+      const TAB_KEY = "keepsake-active-tab";
+
+      function switchTab(tabId) {
+        document.querySelectorAll(".tab-panel").forEach(panel => {
+          panel.classList.toggle("is-active", panel.id === "tab-" + tabId);
+        });
+        document.querySelectorAll(".tab-nav [role='tab']").forEach(btn => {
+          btn.setAttribute("aria-selected", String(btn.dataset.tab === tabId));
+        });
+        localStorage.setItem(TAB_KEY, tabId);
+      }
+
+      document.querySelector(".tab-nav").addEventListener("click", e => {
+        const btn = e.target.closest("[data-tab]");
+        if (btn) switchTab(btn.dataset.tab);
+      });
+
       // ── Init ──
+      switchTab(localStorage.getItem(TAB_KEY) || "today");
       applyLanguage(CURRENT_LANG);
       setImagePreview(null);
 
