@@ -536,7 +536,6 @@
         font-size: 1.2rem;
         line-height: 1;
       }
-      .calendar-card.is-collapsed .calendar-body { display: none; }
 
       .weekday-row, .month-grid {
         display: grid;
@@ -1028,14 +1027,14 @@
 
       <!-- Tab navigation -->
       <nav class="tab-nav" role="tablist" data-i18n-aria-label="tabNavAriaLabel">
-        <button type="button" role="tab" data-tab="today" aria-selected="true" data-i18n="tabToday">Today</button>
+        <button type="button" role="tab" data-tab="today" aria-selected="false" data-i18n="tabToday">Today</button>
         <button type="button" role="tab" data-tab="insights" aria-selected="false" data-i18n="tabInsights">Insights</button>
-        <button type="button" role="tab" data-tab="calendar" aria-selected="false" data-i18n="tabCalendar">Calendar</button>
+        <button type="button" role="tab" data-tab="calendar" aria-selected="true" data-i18n="tabCalendar">Calendar</button>
         <button type="button" role="tab" data-tab="sync" aria-selected="false" data-i18n="tabSync">Sync</button>
       </nav>
 
       <!-- Today tab: mood slider + entry form -->
-      <section id="tab-today" class="tab-panel is-active journal-panel" role="tabpanel" data-i18n-aria-label="journalAriaLabel">
+      <section id="tab-today" class="tab-panel journal-panel" role="tabpanel" data-i18n-aria-label="journalAriaLabel">
         <h1 data-i18n="heading">How was today?</h1>
 
         <div class="mood-card" id="moodCard">
@@ -1134,18 +1133,18 @@
       </div>
 
       <!-- Calendar tab: monthly calendar + timeline -->
-      <div id="tab-calendar" class="tab-panel tab-panel--stacked" role="tabpanel">
+      <div id="tab-calendar" class="tab-panel tab-panel--stacked is-active" role="tabpanel">
         <div class="calendar-card">
           <div class="calendar-header">
             <div>
-              <p class="eyebrow" data-i18n="monthlyViewEyebrow">Monthly view</p>
+              <p class="eyebrow" id="calViewEyebrow">Monthly view</p>
               <h2 id="monthTitle"></h2>
             </div>
             <div class="calendar-controls">
               <button type="button" id="prevMonthButton" data-i18n-aria-label="prevMonthAriaLabel">‹</button>
               <button type="button" id="todayMonthButton" data-i18n="today">Today</button>
               <button type="button" id="nextMonthButton" data-i18n-aria-label="nextMonthAriaLabel">›</button>
-              <button type="button" id="collapseMonthButton" aria-expanded="true" data-i18n="collapse">Collapse</button>
+              <button type="button" id="collapseMonthButton">Weekly</button>
             </div>
           </div>
           <div class="calendar-body" id="calendarBody">
@@ -1322,10 +1321,11 @@
           positive: "Positive",
           moodHistoryAriaLabel: "Mood history",
           monthlyViewEyebrow: "Monthly view",
+          weeklyViewEyebrow: "Weekly view",
+          viewWeekly: "Weekly",
+          viewMonthly: "Monthly",
           prevMonthAriaLabel: "Previous month",
           nextMonthAriaLabel: "Next month",
-          collapse: "Collapse",
-          expand: "Expand",
           monthGridAriaLabel: "Monthly mood calendar",
           editingDate: (date) => `Editing ${date}`,
           noEntrySuffix: ", no entry",
@@ -1416,10 +1416,11 @@
           positive: "חיובי",
           moodHistoryAriaLabel: "היסטוריית מצב רוח",
           monthlyViewEyebrow: "תצוגה חודשית",
+          weeklyViewEyebrow: "תצוגה שבועית",
+          viewWeekly: "שבועי",
+          viewMonthly: "חודשי",
           prevMonthAriaLabel: "חודש קודם",
           nextMonthAriaLabel: "חודש הבא",
-          collapse: "כיווץ",
-          expand: "הרחבה",
           monthGridAriaLabel: "לוח שנה חודשי של מצב הרוח",
           editingDate: (date) => `עריכה: ${date}`,
           noEntrySuffix: ", אין רשומה",
@@ -1757,7 +1758,8 @@
       let editingDate   = localDateKey(new Date());
       let currentImageUrl = null;
       let compressionPromise = null;
-      let visibleMonth  = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      let visibleMonth  = new Date();
+      let calView       = localStorage.getItem("keepsake-cal-view") || "month";
       let statsRange    = "week";
       let statsOffset   = 0; // how many periods back from now
       let lastMoodScore = 4;
@@ -1888,6 +1890,52 @@
           if (dateKey === localDateKey(now)) cell.classList.add("is-today");
           if (dateKey === editingDate) cell.classList.add("is-selected");
           if (date > now) { cell.disabled = true; cell.title = ""; }
+          monthGrid.append(cell);
+        }
+      }
+
+      function renderWeek(entries) {
+        const now    = new Date();
+        const byDate = new Map(entries.map(e => [e.date, e]));
+
+        // Week start = Sunday of the week containing visibleMonth reference
+        const ref   = new Date(visibleMonth);
+        const wkStart = new Date(ref);
+        wkStart.setDate(ref.getDate() - ref.getDay());
+        wkStart.setHours(0, 0, 0, 0);
+        const wkEnd = new Date(wkStart);
+        wkEnd.setDate(wkStart.getDate() + 6);
+
+        const fmt = { month: "short", day: "numeric" };
+        monthTitle.textContent =
+          `${wkStart.toLocaleDateString(T().intlLocale, fmt)} – ${wkEnd.toLocaleDateString(T().intlLocale, fmt)}`;
+
+        monthGrid.innerHTML = "";
+
+        for (let i = 0; i < 7; i++) {
+          const date    = new Date(wkStart);
+          date.setDate(wkStart.getDate() + i);
+          const dateKey = localDateKey(date);
+          const entry   = byDate.get(dateKey);
+          const cell    = document.createElement("button");
+          cell.type = "button";
+          cell.textContent = String(date.getDate());
+          cell.setAttribute("aria-label", `${formatDate(dateKey)}${entry ? ", " + moodForScore(entry.score).name : T().noEntrySuffix}`);
+          cell.dataset.date = dateKey;
+          cell.addEventListener("click", () => openCalendarEditor(dateKey));
+
+          if (entry) {
+            const mood = moodForScore(entry.score);
+            cell.classList.add("has-entry");
+            cell.style.setProperty("--day-color", mood.color);
+            cell.title = `${mood.name}: ${entry.memory || T().noNote}`;
+          } else {
+            cell.title = T().addEntryForDay;
+          }
+          if (dateKey === localDateKey(now)) cell.classList.add("is-today");
+          if (dateKey === editingDate)        cell.classList.add("is-selected");
+          if (date > now) { cell.disabled = true; cell.title = ""; }
+
           monthGrid.append(cell);
         }
       }
@@ -2029,7 +2077,7 @@
         entryCount.textContent = String(entries.length);
         renderStats(entries);
         renderSparkline(entries);
-        renderMonth(entries);
+        calView === "week" ? renderWeek(entries) : renderMonth(entries);
         entries = visibleEntries;
 
         if (entries.length === 0) {
@@ -2257,11 +2305,21 @@
       });
 
       prevMonthButton.addEventListener("click", () => {
-        visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+        if (calView === "week") {
+          visibleMonth = new Date(visibleMonth);
+          visibleMonth.setDate(visibleMonth.getDate() - 7);
+        } else {
+          visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+        }
         renderEntries();
       });
       nextMonthButton.addEventListener("click", () => {
-        visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+        if (calView === "week") {
+          visibleMonth = new Date(visibleMonth);
+          visibleMonth.setDate(visibleMonth.getDate() + 7);
+        } else {
+          visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+        }
         renderEntries();
       });
       todayMonthButton.addEventListener("click", () => {
@@ -2269,11 +2327,20 @@
         renderEntries();
       });
 
+      const calViewEyebrow = document.getElementById("calViewEyebrow");
+
+      function updateCalViewUI() {
+        const weekly = calView === "week";
+        collapseMonthButton.textContent = weekly ? T().viewMonthly : T().viewWeekly;
+        calViewEyebrow.textContent = weekly ? T().weeklyViewEyebrow : T().monthlyViewEyebrow;
+      }
+
       collapseMonthButton.addEventListener("click", () => {
-        const collapsed = calendarCard.classList.toggle("is-collapsed");
-        collapseMonthButton.textContent = collapsed ? T().expand : T().collapse;
-        collapseMonthButton.setAttribute("aria-expanded", String(!collapsed));
-        calendarBody.hidden = collapsed;
+        calView = calView === "month" ? "week" : "month";
+        if (calView === "week") visibleMonth = new Date(); // snap weekly view to current week
+        localStorage.setItem("keepsake-cal-view", calView);
+        updateCalViewUI();
+        renderEntries();
       });
 
       function updateTodayLabel() {
@@ -2294,6 +2361,7 @@
         if (typeof window._refreshCloudStatus === "function") window._refreshCloudStatus();
         updateMood(slider.value);
         renderEditState();
+        updateCalViewUI();
         renderEntries();
         updateTodayLabel();
       }
@@ -2345,8 +2413,9 @@
       });
 
       // ── Init ──
-      switchTab(localStorage.getItem(TAB_KEY) || "today");
+      switchTab(localStorage.getItem(TAB_KEY) || "calendar");
       applyLanguage(CURRENT_LANG);
+      updateCalViewUI();
       setImagePreview(null);
 
       if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
