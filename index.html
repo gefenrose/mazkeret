@@ -961,10 +961,11 @@
         border-bottom: 1px solid var(--line);
       }
 
-      /* ── Calendar inline editor ── */
+      /* ── Editor portal (hidden by default, shown in calendar slot) ── */
+      .editor-portal { display: none; }
       #cal-editor-slot { display: contents; }
       #cal-editor-slot[hidden] { display: none !important; }
-      #cal-editor-slot > .journal-panel { display: block; }
+      #cal-editor-slot:not([hidden]) > .editor-portal { display: block; }
 
       /* ── Keepsake logo ── */
       .app-logo-wrapper {
@@ -1027,14 +1028,13 @@
 
       <!-- Tab navigation -->
       <nav class="tab-nav" role="tablist" data-i18n-aria-label="tabNavAriaLabel">
-        <button type="button" role="tab" data-tab="today" aria-selected="false" data-i18n="tabToday">Today</button>
-        <button type="button" role="tab" data-tab="insights" aria-selected="false" data-i18n="tabInsights">Insights</button>
         <button type="button" role="tab" data-tab="calendar" aria-selected="true" data-i18n="tabCalendar">Calendar</button>
+        <button type="button" role="tab" data-tab="insights" aria-selected="false" data-i18n="tabInsights">Insights</button>
         <button type="button" role="tab" data-tab="sync" aria-selected="false" data-i18n="tabSync">Sync</button>
       </nav>
 
       <!-- Today tab: mood slider + entry form -->
-      <section id="tab-today" class="tab-panel journal-panel" role="tabpanel" data-i18n-aria-label="journalAriaLabel">
+      <section id="tab-today" class="editor-portal journal-panel" aria-label="Journal editor">
         <h1 data-i18n="heading">How was today?</h1>
 
         <div class="mood-card" id="moodCard">
@@ -1962,7 +1962,7 @@
         chips.forEach(c => selectChip(c, true));
       }
 
-      function loadEntryForEditing(date, switchToEditor = false) {
+      function loadEntryForEditing(date) {
         if (date > localDateKey(new Date())) return;
         const entry = getEntries().find(e => e.date === date);
         editingDate = date;
@@ -1973,16 +1973,9 @@
         setImagePreview(entry?.imageUrl || null);
         renderEditState();
         renderEntries();
-        if (switchToEditor) switchTab("today");
       }
 
-      function startTodayEntry() {
-        editingDate = localDateKey(new Date());
-        clearDraft();
-        renderEditState();
-      }
-
-      function updateMood(score) {
+function updateMood(score) {
         const mood = moodForScore(score);
         const changed = Number(score) !== lastMoodScore;
         lastMoodScore = Number(score);
@@ -2279,8 +2272,8 @@
       entryForm.addEventListener("submit", saveEntry);
       clearButton.addEventListener("click", clearDraft);
       newEntryButton.addEventListener("click", () => {
-        if (_calEditorOpen) { closeCalendarEditor(); switchTab("today"); }
-        startTodayEntry();
+        closeCalendarEditor();
+        openCalendarEditor(localDateKey(new Date()));
       });
 
       document.getElementById("statsPrevBtn").addEventListener("click", () => {
