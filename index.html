@@ -624,6 +624,43 @@
         transition: height 0.4s cubic-bezier(0.34,1.56,0.64,1);
       }
 
+      /* ── Correlation ── */
+      .correlation-list { display: grid; gap: 10px; margin-top: 4px; }
+      .correlation-empty { color: var(--muted); font-style: italic; font-family: 'EB Garamond', Georgia, serif; font-size: 1rem; }
+      .correlation-row {
+        display: grid;
+        grid-template-columns: 6.5rem 1fr auto;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.82rem;
+      }
+      .correlation-label { color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .correlation-track {
+        height: 6px;
+        background: var(--line);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .correlation-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: var(--chip-color, var(--mood));
+        transform-origin: inline-start;
+        animation: barGrow 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      .correlation-meta { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+      .correlation-score { font-variant-numeric: tabular-nums; color: var(--ink); }
+      .correlation-delta {
+        font-size: 0.74rem;
+        padding: 1px 5px;
+        border-radius: 999px;
+        font-variant-numeric: tabular-nums;
+      }
+      .correlation-delta--pos { background: #e6f4ed; color: #2e7d52; }
+      .correlation-delta--neg { background: #fdecea; color: #b0251a; }
+      .correlation-delta--neu { background: var(--line); color: var(--muted); }
+      .correlation-count { color: var(--muted); font-size: 0.74rem; }
+
       /* ── Timeline ── */
       .timeline {
         display: grid;
@@ -1250,8 +1287,8 @@
         </form>
       </section>
 
-      <!-- Insights tab: mood stats -->
-      <div id="tab-insights" class="tab-panel" role="tabpanel" data-i18n-aria-label="memoriesAriaLabel">
+      <!-- Insights tab: mood stats + correlation -->
+      <div id="tab-insights" class="tab-panel tab-panel--stacked" role="tabpanel" data-i18n-aria-label="memoriesAriaLabel">
         <div class="month-card">
           <div class="month-header">
             <div>
@@ -1277,6 +1314,11 @@
             <div><span data-i18n="positive">Positive</span><strong id="positiveRate">0%</strong></div>
           </div>
           <div class="sparkline" id="sparkline" data-i18n-aria-label="moodHistoryAriaLabel"></div>
+        </div>
+
+        <div class="month-card">
+          <p class="eyebrow" data-i18n="correlationEyebrow">Mood &amp; small details</p>
+          <div id="correlationList" class="correlation-list"></div>
         </div>
       </div>
 
@@ -1469,6 +1511,8 @@
           tabInsights: "Insights",
           tabCalendar: "Memories",
           tabSync: "Sync",
+          correlationEyebrow: "Mood & small details",
+          correlationEmpty: "Log a few entries with chips to see patterns here.",
         },
         he: {
           htmlLang: "he",
@@ -1564,6 +1608,8 @@
           tabInsights: "תובנות",
           tabCalendar: "זיכרונות",
           tabSync: "סנכרון",
+          correlationEyebrow: "מצב רוח ופרטים קטנים",
+          correlationEmpty: "הוסף/י כמה רשומות עם תגיות כדי לראות דפוסים.",
         },
       };
 
@@ -2168,6 +2214,87 @@ function updateMood(score) {
         }
       }
 
+      function renderCorrelation(entries) {
+        const list = document.getElementById("correlationList");
+        if (!list) return;
+        list.innerHTML = "";
+
+        const chips = ["rest", "work", "people", "outside", "food", "movement"];
+        const scoped = entries.filter(e => isInStatsRange(e.date));
+
+        if (scoped.length === 0) {
+          const em = document.createElement("p");
+          em.className = "correlation-empty";
+          em.textContent = T().correlationEmpty;
+          list.append(em);
+          return;
+        }
+
+        const overallAvg = scoped.reduce((s, e) => s + Number(e.score), 0) / scoped.length;
+
+        const chipData = chips.map(chip => {
+          const S = T().chips;
+          const matching = scoped.filter(e => Array.isArray(e.chips) && e.chips.includes(chip));
+          if (matching.length === 0) return null;
+          const avg = matching.reduce((s, e) => s + Number(e.score), 0) / matching.length;
+          return { chip, label: S[chip], avg, delta: avg - overallAvg, count: matching.length };
+        }).filter(Boolean);
+
+        if (chipData.length === 0) {
+          const em = document.createElement("p");
+          em.className = "correlation-empty";
+          em.textContent = T().correlationEmpty;
+          list.append(em);
+          return;
+        }
+
+        chipData.sort((a, b) => b.avg - a.avg);
+
+        const maxScore = 7;
+        const chipColors = {
+          rest: "#8fb8d4", work: "#c4a882", people: "#b89dc4",
+          outside: "#8fc49a", food: "#d4a870", movement: "#b4c48a"
+        };
+
+        chipData.forEach(({ chip, label, avg, delta, count }) => {
+          const row = document.createElement("div");
+          row.className = "correlation-row";
+
+          const lbl = document.createElement("span");
+          lbl.className = "correlation-label";
+          lbl.textContent = label;
+
+          const track = document.createElement("div");
+          track.className = "correlation-track";
+          const fill = document.createElement("div");
+          fill.className = "correlation-fill";
+          fill.style.width = `${(avg / maxScore) * 100}%`;
+          fill.style.setProperty("--chip-color", chipColors[chip] || "var(--mood)");
+          track.append(fill);
+
+          const meta = document.createElement("div");
+          meta.className = "correlation-meta";
+
+          const score = document.createElement("span");
+          score.className = "correlation-score";
+          score.textContent = avg.toFixed(1);
+
+          const deltaEl = document.createElement("span");
+          const sign = delta >= 0.05 ? "+" : delta <= -0.05 ? "" : "±";
+          const absStr = Math.abs(delta) < 0.05 ? "0" : (delta >= 0 ? delta : Math.abs(delta)).toFixed(1);
+          deltaEl.className = "correlation-delta " + (delta >= 0.05 ? "correlation-delta--pos" : delta <= -0.05 ? "correlation-delta--neg" : "correlation-delta--neu");
+          deltaEl.textContent = `${sign}${absStr}`;
+
+          const cnt = document.createElement("span");
+          cnt.className = "correlation-count";
+          cnt.textContent = `×${count}`;
+
+          meta.append(score, deltaEl, cnt);
+          row.append(lbl, track, meta);
+          list.append(row);
+        });
+      }
+
       function renderEntries() {
         // Scrub any stale blob:// imageUrls that got saved erroneously
         let entries = getEntries();
@@ -2184,6 +2311,7 @@ function updateMood(score) {
         entryCount.textContent = String(entries.length);
         renderStats(entries);
         renderSparkline(entries);
+        renderCorrelation(entries);
         calView === "week" ? renderWeek(entries) : renderMonth(entries);
 
         if (entries.length === 0) {

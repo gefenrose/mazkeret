@@ -1,4 +1,4 @@
-const CACHE = "keepsake-mazkeret-v5";
+const CACHE = "keepsake-mazkeret-v6";
 const SHELL = ["./", "./index.html"];
 
 self.addEventListener("install", e => {
