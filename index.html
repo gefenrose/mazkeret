@@ -15,7 +15,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=Frank+Ruhl+Libre:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=Frank+Ruhl+Libre:wght@300;400&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
     <script>
       // Set lang/dir before first paint to avoid a flash of the wrong direction
       (function () {
@@ -34,6 +34,7 @@
         --card: #fffdf9;
         --line: rgba(43, 40, 37, 0.13);
         --mood: #b9a16b;
+        --ui-serif: 'Playfair Display', Georgia, serif;
       }
 
       * { box-sizing: border-box; }
@@ -130,10 +131,11 @@
         border-radius: 0;
         background: transparent;
         color: var(--muted);
-        font-family: 'EB Garamond', Georgia, serif;
-        font-style: italic;
+        font-family: var(--ui-serif);
+        font-style: normal;
         font-weight: 400;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.01em;
         cursor: pointer;
         transition: color 0.18s, border-color 0.18s;
       }
@@ -216,19 +218,20 @@
       h1, h2, h3, p { margin-top: 0; }
       h1 {
         margin-bottom: 0;
-        font-family: 'EB Garamond', Georgia, serif;
-        font-style: italic;
-        font-size: clamp(2.25rem, 7vw, 5.75rem);
+        font-family: var(--ui-serif);
+        font-style: normal;
+        font-size: clamp(1.9rem, 6vw, 4rem);
         font-weight: 400;
-        line-height: 0.92;
-        letter-spacing: 0;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
       }
       h2 {
         margin-bottom: 0;
-        font-family: 'EB Garamond', Georgia, serif;
-        font-style: italic;
-        font-size: 2rem;
+        font-family: var(--ui-serif);
+        font-style: normal;
+        font-size: 1.65rem;
         font-weight: 400;
+        letter-spacing: -0.01em;
       }
 
       .date-pill, .month-header > span {
@@ -502,9 +505,10 @@
         border-radius: 0;
         color: var(--muted);
         background: transparent;
-        font-family: 'EB Garamond', Georgia, serif;
-        font-style: italic;
-        font-size: 0.95rem;
+        font-family: var(--ui-serif);
+        font-style: normal;
+        font-size: 0.88rem;
+        letter-spacing: 0.01em;
         transition: color 0.18s, border-color 0.18s;
       }
       .range-tabs button[aria-pressed="true"] {
@@ -1049,11 +1053,12 @@
         margin-bottom: 20px;
       }
       .day-view-date {
-        font-family: 'EB Garamond', Georgia, serif;
-        font-style: italic;
-        font-size: clamp(1.5rem, 5vw, 2.4rem);
+        font-family: var(--ui-serif);
+        font-style: normal;
+        font-size: clamp(1.4rem, 5vw, 2rem);
         font-weight: 400;
-        line-height: 1;
+        line-height: 1.1;
+        letter-spacing: -0.01em;
         color: var(--ink);
         margin: 0;
       }
